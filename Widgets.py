@@ -44,7 +44,7 @@ class Widgets:
         ;parma playing is telling the function whether or not to dsiplay that it 
         is playing(play button), or isnt(pause button)
         
-        ;returns the state that the player is at, after 
+        ;returns the state that the player is at, after and the update Rect
     
     
     """

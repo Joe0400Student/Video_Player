@@ -5,14 +5,42 @@ import vlc
 from singleton_decorator import singleton
 import hachoir
 import platform
+import ctypes
 from enum import IntEnum
+
+
+#
+#   TODO: find out how in the world the callbacks in this case work, and what it asks of the memory
+#
+#
+
 
 class Movement(IntEnum):
     UP = 1
     DOWN = 0
 
+CorrectVideLockCb = ctypes.CFUNCTYPE(ctypes.c_void_p,
+                                     ctypes.c_void_p,
+                                     ctypes.c_void_p,
+                                     ctypes.POINTER(
+                                         ctypes.c_void_p
+                                     ))
+CorrectVideoUnlockCb = ctypes.CFUNCTYPE(ctypes.c_void_p,
+                                         ctypes.c_void_p,
+                                         ctypes.POINTER(
+                                             ctypes.c_void_p
+                                         ))
+CorrectVideoDisplayCb = ctypes.CFUNCTYPE(ctypes.c_void_p,
+                                         ctypes.c_void_p,
+                                         ctypes.POINTER(
+                                             ctypes.c_void_p
+                                         ))
+
+
 @singleton
 class Movie:
+
+    mutexL = False
 
     def __init__(self,x,y,videoID,video: str):
         self.widgets = Widgets.Widgets()
@@ -30,18 +58,34 @@ class Movie:
         self.controlYPosTop = y-266
         self.controlYpos = y-256
         self.playing = True
-        self.firstPlay(video)
+        global callbackPointer
+        callbackPointer = ctypes.POINTER(ctypes.c_int)()
+        global savedBuffer
+        savedBuffer = (ctypes.c_ubyte * x * y * 4)()
+        global bufferpointer
+        bufferpointer = ctypes.cast(self.savedBuffer, ctypes.c_void_p)
 
-    ##TODO add a test case for DOS OSX and UNIX-LIKE
+
+    @CorrectVideLockCb
+    def mutexLock(opaque,planes):
+        planes[0] = bufferpointer
+
+    @CorrectVideoDisplayCb
+    def display(a,b):
+        img = pygame.image.frombuffer(savedBuffer,(1920,1080),"RGBA")
+
+
     def firstPlay(self, video:str):
         self.media = self.instance.media_new(video)
         self.player = self.instance.media_player_new()
-        if self.system is 'Linux' or 'Darwin':
+        if self.system in ['Linux', 'Darwin']:
             print("Linux Or Darwin")
             self.player.set_xwindow(self.videoID)
         else:
             self.player.set_hwnd(self.videoID)
         self.player.set_media(self.media)
+
+        self.player.video_set_callbacks(self.mutexLock,None,self.display,None)
         pygame.mixer.quit()
         self.player.play()
         self.len = self.media.get_duration()
@@ -60,6 +104,8 @@ class Movie:
             if e.type == pygame.MOUSEMOTION:
                 self.mousemove = self.tick
                 self.pos = Movement.UP
+        if self.player is None:
+            self.firstPlay(movie)
         if self.pos == Movement.UP and self.controlYpos > self.controlYPosTop:
             self.controlYpos -= 5
         elif self.pos == Movement.UP and self.controlYpos < self.controlYPosTop:
