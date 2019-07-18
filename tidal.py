@@ -9,4 +9,4 @@ import singleton_decorator
 class Tidal:
 	
 	def __init__(self):
-		
+		settings: config = 

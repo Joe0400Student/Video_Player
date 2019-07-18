@@ -7,7 +7,7 @@ import hachoir
 import platform
 import ctypes
 from enum import IntEnum
-
+import config
 
 #
 #   TODO: find out how in the world the callbacks in this case work, and what it asks of the memory
@@ -41,6 +41,7 @@ CorrectVideoDisplayCb = ctypes.CFUNCTYPE(ctypes.c_void_p,
 class Movie:
 
     mutexL = False
+    
 
     def __init__(self,x,y,videoID,video: str):
         self.widgets = Widgets.Widgets()

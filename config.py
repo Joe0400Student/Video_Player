@@ -1,11 +1,10 @@
 from cryptography.fernet import Fernet
 import getpass
-import singleton_decoratior
+from singleton_decorator import singleton
 import os.path
-import os.mkdir
+import os
 import re
 from typing import Dict
-
 
 @singleton
 class FileLoader:
@@ -18,7 +17,7 @@ class FileLoader:
 				print("directory made on INIT of file module")
 			except FileExistsError:
 				print("directory /home/"+self.username+"/.pymedia already exists")
-		self.file = open("/home/"+self.username+"/.pymedia/info.conf","rw+")
+		self.file = open("/home/"+self.username+"/.pymedia/info.conf","a+")
 		self.filecontents = self.read_file()
 		
 	
@@ -27,7 +26,7 @@ class FileLoader:
 		for line in self.file:
 			line = re.sub('[ \n\t]','',line)
 			inside = line.split(":")
-			if(len(inside) == 2)
+			if(len(inside) == 2):
 				dicta.update({inside[0],inside[1]})
 		return dicta
 	
@@ -51,12 +50,14 @@ class FileLoader:
 		return self.filecontents[key]
 	
 	def add_element(self, key: str, element: str):
-		self.filecontents.update({key, element})
-	
-	def __del__(self):
+		self.filecontents.update({key: element})
+		self.file.write("\t"+key+":"+element)
+
+	def change_element(self, key: str, element: str):
+		self.filecontents[key] = element
 		self.file.close()
-		self.file = open("/home/"+self.username+"/.pymedia/info.conf","w")
-		for element,key in self.filecontents:
-			self.file.write(""+element+":"+key+"\n")
+		self.file.open("/home/"+self.username+"/.pymedia/info.conf","w")
+		for key,element in self.filecontents:
+			self.file.write("\t"+key+":"+element)
 		self.file.close()
-	
+		self.file.open("/home/"+self.username+"/.pymedia/info.conf","a+")
