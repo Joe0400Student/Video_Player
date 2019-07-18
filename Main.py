@@ -47,7 +47,7 @@ def main():
 	if fullscreen:
 		disp = pygame.display.set_mode((res_x, res_y), pygame.FULLSCREEN)
 	else:
-		disp = pygame.display.set_mode((res_x, res_y), pygame.FULLSCREEN)
+		disp = pygame.display.set_mode((res_x, res_y))
 	pygame.display.set_caption("PyMedia")
 	
 

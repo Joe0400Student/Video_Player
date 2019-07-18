@@ -17,8 +17,12 @@ class FileLoader:
 				print("directory made on INIT of file module")
 			except FileExistsError:
 				print("directory /home/"+self.username+"/.pymedia already exists")
+			self.filecontents = {}
+		else:
+			self.file = open("/home/"+self.username+"/.pymedia/info.conf","r")
+			self.filecontents = self.read_file()
+			self.file.close()
 		self.file = open("/home/"+self.username+"/.pymedia/info.conf","a+")
-		self.filecontents = self.read_file()
 		
 	
 	def read_file(self) -> Dict[str, str]:
@@ -27,7 +31,7 @@ class FileLoader:
 			line = re.sub('[ \n\t]','',line)
 			inside = line.split(":")
 			if(len(inside) == 2):
-				dicta.update({inside[0],inside[1]})
+				dicta.update({inside[0]:inside[1]})
 		return dicta
 	
 	""" 
@@ -51,13 +55,13 @@ class FileLoader:
 	
 	def add_element(self, key: str, element: str):
 		self.filecontents.update({key: element})
-		self.file.write("\t"+key+":"+element)
+		self.file.write("\t"+key+":"+element+"\n")
 
 	def change_element(self, key: str, element: str):
 		self.filecontents[key] = element
 		self.file.close()
 		self.file.open("/home/"+self.username+"/.pymedia/info.conf","w")
 		for key,element in self.filecontents:
-			self.file.write("\t"+key+":"+element)
+			self.file.write("\t"+key+":"+element+"\n")
 		self.file.close()
 		self.file.open("/home/"+self.username+"/.pymedia/info.conf","a+")
